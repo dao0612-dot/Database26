@@ -4,7 +4,7 @@ set SQL_SAFE_UPDATES=0;
 -- 스크립트를 1줄씩 실행하는 것이 기본임 (ctrl + enter)
 -- 만약 더미데이터를 20개를 입력한다!!! (블럭설정 ctrl + shift + enter)
 
-use sakila; -- sakila 데이터베이스에 가서 사용할께!!!
+use sakila; -- sakila 데이터베이스에 가서 사용할께!!!7
 -- select * 은 실무에서는 사용하기 힘들다. 이미 아주 많이 존재하는 모든 열과 행을 가져오는 과정이 매우 길어지고 무거워지기 때문.
 select * from actor; -- actor 테이블에 모든 값을 가져와~
 
@@ -234,3 +234,69 @@ drop table doit_parent;
 alter table doit_child
 drop constraint doit_child_ibfk_1;
 drop table doit_parent;
+
+
+# 내부 조인
+select 
+a.customer_id,
+a.store_id,
+a.first_name,
+a.last_name,
+a.email,
+a.address_id as a_address_id,
+b.address_id as b_address_id,
+b.address,
+b.district,
+b.city_id,
+b.postal_code,
+b.phone,
+b.location
+from customer as a
+inner join address as b on a.address_id = b.address_id
+where a.first_name = 'ROSA';
+
+select
+a.customer_id,
+a.first_name,
+a.last_name,
+b.address_id,
+b.address,
+b.district,
+b.postal_code,
+c.city_id,
+c.city
+from customer as a
+inner join address as b on a.address_id = b.address_id
+inner join city as c on b.city_id = c.city_id
+where a.first_name = 'ROSA';
+
+# 외부 조인 (left/right/full outer join)
+select
+a.address,
+a.address_id as a_address_id,
+b.address_id as b_address_id,
+b.store_id
+from address as a
+left join store as b on a.address_id = b.address_id
+where b.address_id is not null;
+
+# 서브 쿼리
+select * from customer
+where customer_id in (select customer_id from customer where first_name in('ROSA','ANA'));
+
+select
+a.film_id, a.title
+from film as a
+inner join film_category as b on a.film_id = b.film_id
+inner join category as c on b.category_id = c.category_id
+where c.name = 'Action';
+
+select
+a.film_id,
+a.title,
+a.special_features,
+c. name
+from film as a
+inner join film_category as b on a.film_id = b.film_id
+inner join category as c on b.category_id = c.category_id
+where a.film_id > 10 and a.film_id < 20;

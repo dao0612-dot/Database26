@@ -26,7 +26,8 @@ col_3 datetime
 
 -- doit_dml 테이블에 열을 기반으로 한 '행(데이터)'을 생성한다.(데이터 삽입)
 insert into doit_dml (col_1, col_2, col_3) values (1,'doitsql','2023-01-01');
-select * from doit_dml;
+
+select col_1 from doit_dml;
 
 insert into doit_dml values (2,'열 이름 생략','2023-01-02');
 insert into doit_dml (col_1, col_2) values (3, 'col_3값 생략');
@@ -48,5 +49,188 @@ delete from doit_dml;
 drop table doit_dml;
 
 use sakila;
+# where 절로 조건에 맞는 데이터 조회하기 
+select * from customer where first_name = 'MARIA';
+select * from customer where first_name < 'MARIA';
 
+select * from customer where address_id = 200;
+select * from customer where address_id < 200;
+
+select * from payment
+where payment_date = '2005-07-09 13:24:07';
+select * from payment
+where payment_date < '2005-07-09 13:24:07';
+
+select * from customer where address_id between 5 and 10;
+select * from payment where payment_date between '2005-06-17' and '2005-07-19';
+
+select * from customer
+where first_name between 'M' and 'O';
+select * from customer
+where first_name not between 'M' and 'O';
+
+
+select * from city where city = 'Sunnyvale' and country_id = 103;
+select * from payment
+where payment_date >= '2005-06-01' and payment_date <= '2005-07-05';
+select * from customer
+where first_name = 'MARIA' or first_name = 'LINDA';
+select * from customer
+where first_name = 'MARIA' or first_name = 'LINDA' or first_name = 'NANCY';
+select * from customer
+where first_name in ('MARIA','LINDA','NANCY');
+select * from city
+where country_id in (103,86) 
+and city in ('Cheju','Sunnyvale','Dallas');
+
+select * from address;
+
+select * from address where address2 is null;
+select * from address where address2 is not null;
+select * from address where address2 = '';
+
+
+#order by 절로 데이터 정렬하기
+select * from customer order by first_name;
+select * from customer order by last_name;
+select * from customer order by first_name, store_id;
 select * from customer order by first_name asc;
+select * from customer order by first_name desc;
+select * from customer order by store_id desc, first_name asc limit 10;
+select * from customer order by customer_id asc limit 100,10;
+select * from customer order by customer_id asc limit 10 offset 100;
+
+
+#와일드 카드로 문자열 조회하기
+select * from customer where first_name like 'A%';
+select * from customer where first_name like 'AA%';
+select * from customer where first_name like '%A';
+select * from customer where first_name like '%RA';
+select * from customer where first_name like '%A%';
+ 
+with CTE (col_1) as (
+select 'A%bc' union all
+select 'A_bc' union all
+select 'Abc'
+)
+select * from CTE;
+
+with CTE (col_1) as (
+select 'A%bc' union all
+select 'A_bc' union all
+select 'Abc'
+)
+select * from CTE where col_1 like '%!%%' escape '!';
+
+select * from customer where first_name like 'A_';
+select * from customer where first_name like 'A__';
+select * from customer where first_name like '__A';
+select * from customer where first_name like 'A__A';
+select * from customer where first_name like '_____';
+
+select * from customer where first_name like 'A_R%';
+select * from customer where first_name like '__R%';
+select * from customer where first_name like 'A%R_';
+
+select * from customer where first_name regexp '^K|N$';
+select * from customer where first_name regexp 'K[^L-N]';
+select * from customer where first_name like 'S%' and first_name regexp 'A[L-N]';
+select * from customer where first_name like '_______'
+	and first_name regexp 'A[L-N]'
+    and first_name regexp 'O$';
+    
+#group by 절로 데이터 묶기
+select special_features from film group by special_features;
+select rating from film group by rating;
+select rating from film;
+select special_features, rating from film group by special_features, rating;
+select special_features, count(*) as cnt from film group by special_features;
+select special_features,rating, count(*) as cnt from film 
+group by special_features,rating order by special_features,rating, cnt desc;
+select special_features,rating from film
+group by special_features,rating
+having rating = 'G';
+select special_features, count(*) as cnt from film
+group by special_features
+having cnt > 70;
+select special_features,rating, count(*) as cnt from film
+group by special_features, rating
+having rating = 'R' and cnt > 8;
+
+select distinct special_features, rating from film;
+
+
+#테이블 생성 및 조작하기
+create database if not exists dotisql;
+
+use doitsql;
+
+create table doit_increment (
+col_1 int auto_increment primary key,
+col_2 varchar(50),
+col_3 int);
+
+insert into doit_increment (col_2, col_3) values ('1 자동입력', 1);
+insert into doit_increment (col_2, col_3) values ('2 자동입력', 2);
+insert into doit_increment (col_1, col_2, col_3) values (3,'3 자동입력',3);
+insert into doit_increment (col_1, col_2, col_3) values (5,'4 건너뛰고 자동입력',5);
+insert into doit_increment (col_2, col_3) values ('어디까지 입력되었을까?',0);
+alter table doit_increment auto_increment=100;
+insert into doit_increment (col_2, col_3) values ('시작값이 변경되었을가?',0);
+set @@auto_increment_increment = 5;
+insert into doit_increment (col_2, col_3) values ('5씩 증가할까? (1)',0);
+insert into doit_increment (col_2, col_3) values ('5씩 증가할까? (2)',0);
+
+select last_insert_id();
+select * from doit_increment;
+
+create table doit_insert_select_from (
+col_1 int,
+col_2 varchar(10)
+);
+
+
+create table doit_insert_select_to (
+col_1 int,
+col_2 varchar(10)
+);
+
+insert into doit_insert_select_from values (1, 'Do');
+insert into doit_insert_select_from values (2, 'It');
+insert into doit_insert_select_from values (3,'Mysql');
+
+insert into doit_insert_select_to
+select * from doit_insert_select_from;
+
+select * from doit_insert_select_to;
+
+create table doit_insert_select_new as (select * from doit_insert_select_from);
+select * from doit_insert_select_new;
+
+# 외래키로 연결되어 있는 테이블 조작하기
+create table doit_parent (col_1 int primary key);
+create table doit_child (col_1 int);
+alter table doit_child
+add foreign key (col_1) references doit_parent(col_1);
+
+show create table doit_child;
+
+insert into doit_child values (1); # 부모 테이블 데이터에 먼저 입력해야 한다.
+
+insert into doit_parent values (1); # 부모 테이블 데이터를 먼저 입력 후 자식 테이블 데이터 입력
+insert into doit_child values (1);
+
+select * from doit_parent;
+select * from doit_child;
+
+delete from doit_parent where col_1 = 1; # 부모 테이블 데이터만 삭제 불가능
+
+delete from doit_child where col_1 = 1; # 자식 테이블 데이터를 먼저 삭제 후 부모 테이블 삭제
+delete from doit_parent where col_1 = 1;
+
+drop table doit_child;
+drop table doit_parent; 
+
+alter table doit_child
+drop constraint doit_child_ibfk_1;
+drop table doit_parent;
